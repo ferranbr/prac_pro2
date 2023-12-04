@@ -1,0 +1,57 @@
+Estaciones:
+- Privat:
+--> BinTree<string>ids_estaciones;
+--> map<string,Estacion>estaciones;
+
+- Public:
+--> bool existe_estacion(string id_estacion);
+--> bool existe_bicicleta(string id_bici);
+--> int total_plaza_libres();
+--> void reestructurar_ubis();
+--> void añadir_bici();
+--> void leer();
+
+
+
+Estacion:
+- Privat:
+--> string id_estacion;
+--> int capacidad(>0)
+--> map<string,Bicicleta>bicis;
+
+- Public:
+--> Estacion(string id_estacion, int capacidad);
+--> string consultar_id_est();
+--> bool cabe_bici();
+--> bool existe_bici(string id_bici);
+--> void insertar_bici(const Bicicleta& bici);
+--> void mod_capacidad(int nueva_capacidad);
+--> int plazas_libres();
+
+
+
+Bicicleta:
+- Privat:
+--> string id_bici;
+--> vector<string>viajes;
+--> string ubi;
+
+- Public:
+--> Bicicleta(string id_bici, string id_estacion);
+--> string consultar_id_bici();
+--> vector<string> consultar_viajes();
+--> void nuevo_viaje(string id_estacion);
+
+
+main:
+- alta_bici or ab
+- baja_bici or bb
+- estacion_bici or eb
+- viajes_bici or vb
+- mover_bici or mb
+- bicis_estacion or be
+- modificar_capacidad or mc
+- plazas_libres or pl
+- subir_bicis or sb
+- asignar_estacion or ae
+- fin

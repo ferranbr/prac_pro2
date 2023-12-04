@@ -1,0 +1,25 @@
+e1 1
+e11 3
+e111 2
+#
+#
+e112 2
+#
+#
+e12 1
+e121 2
+#
+#
+e122 3
+#
+#
+plazas_libres
+alta_bici b1 e12
+pl
+ab b1 e122
+ab b1 e404
+ab b2 e404
+ab b2 e12
+estacion_bici b1
+eb b404
+fin
