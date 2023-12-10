@@ -1,15 +1,35 @@
 #include "Bicicletas.hh"
 
-Bicicletas::Bicicletas(map<string,Bicicleta);
+Bicicletas::Bicicletas(const map<string,Bicicleta>& m) {
+    cjt_bicis = m;
+}
     
-string Bicicletas::consultar_ubicacion(string idb);
+string Bicicletas::consultar_ubicacion(const string& idb) {
+    return cjt_bicis[idb].consultar_ubi();
+}
 
-void Bicicletas::nueva_bici(string idb, string ide);
+void Bicicletas::nueva_bici(const string& idb,const string& ide) {
+    Bicicleta b(idb,ide);
+    cjt_bicis[idb] = b;
+}
 
-void Bicicletas::quitar_bici(string idb);
+void Bicicletas::quitar_bici(const string& idb) {
+    cjt_bicis.erase(idb);
+}
 
-bool Bicicletas::existe_bicicleta(string idb);
+bool Bicicletas::buscar_bicicleta(const string& idb) {
+    if (cjt_bicis.find(idb) != cjt_bicis.end()) return true;
+    else return false;
+}
 
-void Bicicletas::cambiar_ubi(string idb, string new_ide);  
+void Bicicletas::nueva_ubi(const string& idb,const string& new_ide) {
+    cjt_bicis[idb].nuevo_viaje(new_ide);
+}  
 
-void Bicicletas::sacar_viajes(string idb);
+void Bicicletas::cambiar_la_ubi(const string& idb,const string& nueva) {
+    cjt_bicis[idb].cambiar_ubicacion(nueva);
+}
+
+void Bicicletas::sacar_viajes(const string& idb) {
+    cjt_bicis[idb].consultar_viajes();
+}

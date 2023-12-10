@@ -16,15 +16,17 @@ private:
 public:
     Bicicleta();
 
-    Bicicleta(string id, string est_act);
+    Bicicleta(const string& id, const string& est_act);
 
     string consultar_id_bici();
 
     string consultar_ubi();
 
-    vector<string> consultar_viajes();
+    void cambiar_ubicacion(const string& nueva);
 
-    void nuevo_viaje(string id_estacion);
+    void consultar_viajes();
+
+    void nuevo_viaje(const string& id_estacion);
 
 };
 #endif

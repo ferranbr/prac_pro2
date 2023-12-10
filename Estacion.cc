@@ -3,14 +3,13 @@
 Estacion::Estacion() : bicis() {
     id_estacion = "";
     capacidad = 0;
-    plazas_libres = 0;
 }
 
-Estacion::Estacion(string id_estacion, int max) {
-    this -> id_estacion = id_estacion;
-    capacidad = max;
-    plazas_libres = max;
+Estacion::Estacion(const string& ide,const int& c) {
+    id_estacion = ide;
+    capacidad = c;
 }
+
 string Estacion::consultar_id_est() {
     return id_estacion;
 }
@@ -19,23 +18,18 @@ map<string,Bicicleta>Estacion::consultar_bicis() {
     return bicis;
 }
 
-void Estacion::borrar_bici(string id_bici) {
+void Estacion::borrar_bici(const string& id_bici) {
     auto i = bicis.find(id_bici);
     bicis.erase(i);
-    ++plazas_libres;
 }
 
-void Estacion::sacar_viajes(string id_bici) {
-    auto i = bicis.find(id_bici);
-    vector<string>viajes = i -> second.consultar_viajes();
-    for (int i = 0; i < viajes.size() - 1; ++i) {
-        cout << viajes[i] << " " << viajes [i+1]<< endl;
-    }
+void Estacion::sacar_viajes(const string& id_bici) {
+    bicis[id_bici].consultar_viajes();
 }
 
 void Estacion::sacar_bicis() {
     for (auto i = bicis.begin(); i != bicis.end(); ++i) {
-        cout << i->first << endl;
+        cout << i->second.consultar_id_bici() << endl;
     }
 }
 
@@ -43,30 +37,25 @@ int Estacion::ocupacion() {
     return bicis.size();
 }
 
-int Estacion::sitios_libres() {
-    return plazas_libres;
-}
-
-bool Estacion::existe_bici(string id) {
+bool Estacion::existe_bici(const string& id) {
     if(bicis.find(id) != bicis.end()) return true;
     else return false;
 }
 
-void Estacion::insertar_bici(Bicicleta& bici) {
-    string id = bici.consultar_id_bici();
-    bicis[id] = bici;
-    --plazas_libres;
+void Estacion::insertar_bici(const string& idb,const string& ide) {
+    Bicicleta b(idb,ide);
+    bicis.insert(make_pair(idb,b));
 }
 
-void Estacion::mod_capacidad(int nueva_capacidad) {
+void Estacion::mover_bici(Bicicleta& b,const string& ide) {
+    b.cambiar_ubicacion(ide);
+    string id = b.consultar_id_bici();
+    bicis[id] = b;
+}
+void Estacion::mod_capacidad(const int& nueva_capacidad) {
     capacidad = nueva_capacidad;
-    plazas_libres = plazas_libres + (nueva_capacidad- plazas_libres);
 }
 
-void Estacion::menos_libres() {
-    --plazas_libres;
-}
-
-void Estacion::mas_libres() {
-    ++plazas_libres;
+int Estacion::sitios_libres() {
+    return (capacidad - bicis.size());
 }

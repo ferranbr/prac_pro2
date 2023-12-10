@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <map>
-#include "Bicicleta"
+#include "Bicicleta.hh"
 using namespace std;
 
 class Bicicletas {
@@ -12,18 +12,20 @@ private:
     map<string,Bicicleta> cjt_bicis;
 
 public:
-    Bicicletas(map<string,Bicicleta);
+    Bicicletas(const map<string,Bicicleta>& m);
     
-    string consultar_ubicacion(string idb);
+    string consultar_ubicacion(const string& idb);
 
-    void nueva_bici(string idb, string ide);
+    void nueva_bici(const string& idb,const string& ide);
 
-    void quitar_bici(string idb);
+    void quitar_bici(const string& idb);
 
-    bool existe_bicicleta(string idb);
+    bool buscar_bicicleta(const string& idb);
 
-    void cambiar_ubi(string idb, string new_ide);  
+    void nueva_ubi(const string& idb, const string& new_ide);
 
-    void sacar_viajes(string idb);
+    void cambiar_la_ubi(const string& idb,const string& nueva);  
+
+    void sacar_viajes(const string& idb);
 };
 #endif

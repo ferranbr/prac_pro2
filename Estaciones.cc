@@ -1,20 +1,14 @@
 #include "Estaciones.hh"
-#include "Bicicleta.hh"
-#include <map>
 
-Estaciones::Estaciones(BinTree<string>ids_estaciones, map<string,Estacion>estaciones) {
-    this -> ids_estaciones = ids_estaciones;
-    this -> estaciones = estaciones;
-}
+Estaciones::Estaciones(BinTree<string>& ids_estaciones, map<string, Estacion>& estaciones): ids_estaciones(ids_estaciones),estaciones(estaciones),bicicletas(map<string, Bicicleta>()),plazas_libres(0){}
 
-void Estaciones::alta(string idb,string ide) {
-    Bicicleta b(idb,ide);
-    estaciones[ide].insertar_bici(b);
+void Estaciones::alta(const string& idb,const string& ide) {
+    estaciones[ide].insertar_bici(idb,ide);
+    bicicletas.nueva_bici(idb,ide);
     --plazas_libres;
-    estaciones[ide].menos_libres();
 }
 
-bool Estaciones::existe_estacion(BinTree<string> ids, string id) {
+bool Estaciones::existe_estacion(const BinTree<string>& ids,const string& id) {
     if (ids.value() == id) return true;
     else {
         bool left = false;
@@ -25,40 +19,30 @@ bool Estaciones::existe_estacion(BinTree<string> ids, string id) {
     }
 }
 
-string Estaciones::ubi_bicicleta(string id) {
-    string resultado = "";
-    for (auto i = estaciones.begin(); i != estaciones.end(); ++i) {
-        if (i->second.existe_bici(id)) {
-            resultado = i->second.consultar_id_est();
-            break;
-        }
-    }
-    return resultado;
+string Estaciones::ubi_bicicleta(const string& id) {
+    return bicicletas.consultar_ubicacion(id);
 }
 
 void Estaciones::consultar_libres() {
     cout << plazas_libres << endl;
 }
 
-void Estaciones::cambiar_ubi(string id_bici, string ant_est, string new_est) {
+void Estaciones::cambiar_ubi(const string& id_bici,const string& ant_est,const string& new_est) {
     map<string,Bicicleta>m = estaciones[ant_est].consultar_bicis();
     m[id_bici].nuevo_viaje(new_est);
     Bicicleta b = m[id_bici];
-    estaciones[new_est].insertar_bici(b);
+    estaciones[new_est].mover_bici(b,new_est);
     estaciones[ant_est].borrar_bici(id_bici);
+    bicicletas.nueva_ubi(id_bici,new_est);
 }
 
-bool Estaciones::existe_bicicleta(string id) {
-    for (auto i = estaciones.begin(); i != estaciones.end(); ++i) {
-        if(i -> second.existe_bici(id)) {
-            return true;
-            break;
-        }
-    }
-    return false;
+bool Estaciones::existe_bicicleta(const string& id) {
+    if(bicicletas.buscar_bicicleta(id)) return true;
+    else return false;
 }
 
-void Estaciones::eliminar_bicicleta(string id_bici) {
+void Estaciones::eliminar_bicicleta(const string& id_bici) {
+    bicicletas.quitar_bici(id_bici);
     for (auto i = estaciones.begin(); i != estaciones.end(); ++i) {
         if (i->second.existe_bici(id_bici)) {
             i->second.borrar_bici(id_bici);
@@ -77,7 +61,7 @@ bool Estaciones::hay_hueco() {
     return false; 
 }
 
-void Estaciones::reestructurar_ubis(BinTree<string> ids) {
+void Estaciones::reestructurar_ubis(const BinTree<string>& ids) {
     if (!ids.left().empty() && !ids.right().empty()) {
         string valor = ids.value();
         string left = ids.left().value();
@@ -85,51 +69,71 @@ void Estaciones::reestructurar_ubis(BinTree<string> ids) {
         map<string,Bicicleta>m = estaciones[valor].consultar_bicis();
         map<string,Bicicleta>ml = estaciones[left].consultar_bicis();
         map<string,Bicicleta>mr = estaciones[right].consultar_bicis();
-
-        while (estaciones[valor].sitios_libres() > 0) {
-            if (estaciones[left].ocupacion() >= estaciones[right].ocupacion()) {
-                while (estaciones[left].ocupacion() >= estaciones[right].ocupacion()) {
-                    estaciones[valor].insertar_bici(ml.begin() -> second);
-                    estaciones[left].borrar_bici(ml.begin() -> first);
-                }
+        while (estaciones[valor].sitios_libres() > 0) { 
+            if ((estaciones[left].ocupacion() > estaciones[right].ocupacion()) or (estaciones[left].ocupacion() == estaciones[right].ocupacion() && (estaciones[left].consultar_id_est() < estaciones[right].consultar_id_est()))) {
+                auto i = ml.begin();
+                if (i != ml.end()) {
+                    bicicletas.cambiar_la_ubi(i->first, valor);
+                    estaciones[valor].mover_bici(i->second, valor);
+                    estaciones[left].borrar_bici(i->first);
+                    ml.erase(i);
+                } 
+                else break;
             } 
-            else {
-                while (estaciones[left].ocupacion() < estaciones[right].ocupacion()) {
-                    estaciones[valor].insertar_bici(mr.begin() -> second);
-                    estaciones[right].borrar_bici(mr.begin() -> first); 
-                }
+            else if ((estaciones[left].ocupacion() < estaciones[right].ocupacion()) or (estaciones[left].ocupacion() == estaciones[right].ocupacion() && (estaciones[left].consultar_id_est() > estaciones[right].consultar_id_est()))) {
+                auto i = mr.begin();
+                if (i != mr.end()) {
+                    bicicletas.cambiar_la_ubi(i->first, valor);
+                    estaciones[valor].mover_bici(i->second, valor);
+                    estaciones[right].borrar_bici(i->first);
+                    mr.erase(i);  
+                } 
+                else break;
             }
+            if (estaciones[valor].sitios_libres() > 0 && ((estaciones[left].ocupacion() > 0) or (estaciones[right].ocupacion() > 0))) continue;
+            else break;
         }
         reestructurar_ubis(ids.left());
         reestructurar_ubis(ids.right());
     }
 }
 
-
-void Estaciones::meter_bici(string &id_bici, string &id_correcto,int &plazas ,int &recs,BinTree<string> ids) {
-    string valor = ids.value();
-    if(ids.right().empty() && ids.left().empty()) {
-        id_correcto = valor;
+void Estaciones::meter_bici(const string& id_bici, string &id_correcto,int &plazas ,int &recs,const BinTree<string>& ids, double& max_desocup) {
+    double desocup_act;
+    if (ids.left().empty()) {
+        auto i = estaciones.find(ids.value());
         recs = 1;
-        plazas = estaciones[valor].sitios_libres(); 
+        plazas = i -> second.sitios_libres();
+        desocup_act = double(plazas)/double(recs);
+        if ((desocup_act > max_desocup)) {
+            max_desocup = desocup_act;
+            id_correcto = ids.value();
+        }
+        else if (desocup_act == max_desocup) {
+            if (ids.value() < id_correcto) id_correcto = ids.value();
+        }
     }
     else {
-        int recs2 = recs + 2;
-        int plazas2 = plazas + estaciones[valor].sitios_libres(); 
-        if(plazas2/recs2 > plazas/recs) {
-            recs = recs2;
-            plazas = plazas2;
-            id_correcto = valor;
+        auto i = estaciones.find(ids.value());
+        int recs_izq;
+        int pl_izq;
+        meter_bici(id_bici,id_correcto,pl_izq,recs_izq,ids.left(),max_desocup);
+        int recs_dre;
+        int pl_dre;
+        meter_bici(id_bici,id_correcto,pl_dre,recs_dre,ids.right(),max_desocup);
+        
+        plazas = pl_izq + pl_dre + i -> second.sitios_libres();
+        recs = recs_izq + recs_dre + 1;
+
+        desocup_act = double(plazas)/double(recs);
+        if (desocup_act > max_desocup) {
+            max_desocup = desocup_act;
+            id_correcto = ids.value();
         }
-    
-    meter_bici(id_bici,id_correcto,plazas,recs,ids.left());
-    meter_bici(id_bici,id_correcto,plazas,recs,ids.right());
-
+        else if(desocup_act == max_desocup) {
+            if (ids.value() < id_correcto) id_correcto = ids.value();
+        }
     }
-
-    Bicicleta b(id_bici,id_correcto);
-    estaciones[id_correcto].insertar_bici(b);
-    cout << id_correcto << endl;
 }
 
 void Estaciones::leer(BinTree<string>& a, map<string,Estacion>& m) {
